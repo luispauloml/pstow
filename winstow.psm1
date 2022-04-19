@@ -3,7 +3,10 @@ function winstow {
     Param(
 	[Parameter(Mandatory=$true, ValueFromPipeline=$true)]
 	[string]
-	$Name
+	$Name,
+	[Parameter(Mandatory=$true)]
+	[string]
+	$Target
     )
 
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
@@ -20,4 +23,7 @@ function winstow {
 	Write-Verbose "$Name is empty"
 	return
     }
+
+    # Check $TargetDir; an error will be thrown if it does not exists
+    $Target = Resolve-Path -Path $Target
 }
