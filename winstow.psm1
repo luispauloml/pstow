@@ -1,5 +1,5 @@
 function winstow {
-    [Cmdletbinding()]
+    [Cmdletbinding(SupportsShouldProcess=$true)]
     Param(
 	[Parameter(Mandatory=$true, ValueFromPipeline=$true)]
 	[string]
