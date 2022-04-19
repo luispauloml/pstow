@@ -64,7 +64,7 @@ function winstow {
 
 	    New-Item -ItemType SymbolicLink `
 	      -Path $LinkPath -Target $Item.FullName `
-	      -Force
+	      -Force | Out-Null
 	    return
 
 	} elseif ($FileExists -and !$isDir) {
