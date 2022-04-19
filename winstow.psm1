@@ -3,40 +3,40 @@ function winstow {
     Param(
 	[Parameter(Mandatory=$true, ValueFromPipeline=$true)]
 	[string]
-	$Name,
+	$PkgName,
 	[Parameter(Mandatory=$true)]
 	[string]
-	$Target
+	$Destination
     )
 
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
 	$VerbosePreference = "Continue"
     }
 
-    $pkg = Get-ChildItem -Filter $Name -Directory
-    if (!$pkg) {
-	throw "$Name not found"
-    } elseif ($pkg.Length -ne 1) {
-	Write-Error "more than one item was found for '$Name'" `
+    $Pkg = Get-ChildItem -Filter $PkgName -Directory
+    if (!$Pkg) {
+	throw "$PkgName not found"
+    } elseif ($Pkg.Length -ne 1) {
+	Write-Error "more than one item was found for '$PkgName'" `
 	  -Category LimitsExceeded
     }
-    $pkg = $pkg[0]
-    Write-Verbose "found directory '$($pkg.Name)'"
+    $Pkg = $Pkg[0]
+    Write-Verbose "found directory '$($Pkg.Name)'"
 
-    $contents = Get-ChildItem -Path $pkg
-    if (!$contents) {
-	Write-Verbose "'$Name is empty. Nothing to be done."
+    $Contents = Get-ChildItem -Path $Pkg
+    if (!$Contents) {
+	Write-Verbose "'$PkgName' is empty. Nothing to be done."
 	return
     }
 
-    # Check $TargetDir; an error will be thrown if it does not exists
-    $Target = Resolve-Path -Path $Target
+    # Check $Destination; an error will be thrown if it does not exists
+    $Destination = Resolve-Path -Path $Destination
 
     # Now check whether it is a directory
-    if ((Get-Item $Target).GetType().Name -ne "DirectoryInfo") {
-	throw "$Target is not a directory"
+    if ((Get-Item $Destination).GetType().Name -ne "DirectoryInfo") {
+	throw "$Destination is not a directory"
     }
-    Write-Verbose "found directory $Target"
+    Write-Verbose "found directory $Destination"
 
     # Recursively create symbolic links
     function worker($Item, $Dir){
@@ -79,5 +79,5 @@ function winstow {
 	}
     }
 
-    $contents | ForEach-Object {worker $PSITEM $Target}
+    $Contents | ForEach-Object {worker $PSITEM $Destination}
 }
