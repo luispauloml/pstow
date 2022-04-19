@@ -15,8 +15,12 @@ function winstow {
 
     $pkg = Get-ChildItem -Filter $Name -Directory
     if (!$pkg) {
-	Write-Error "$Name not found" -Category ObjectNotFound
+	throw "$Name not found"
+    } elseif ($pkg.Length -ne 1) {
+	Write-Error "more than one item was found for '$Name'" `
+	  -Category LimitsExceeded
     }
+    $pkg = $pkg[0]
 
     $contents = Get-ChildItem -Path $pkg
     if (!$contents) {
