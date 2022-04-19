@@ -21,15 +21,22 @@ function winstow {
 	  -Category LimitsExceeded
     }
     $pkg = $pkg[0]
+    Write-Verbose "found directory '$($pkg.Name)'"
 
     $contents = Get-ChildItem -Path $pkg
     if (!$contents) {
-	Write-Verbose "$Name is empty"
+	Write-Verbose "'$Name is empty. Nothing to be done."
 	return
     }
 
     # Check $TargetDir; an error will be thrown if it does not exists
     $Target = Resolve-Path -Path $Target
+
+    # Now check whether it is a directory
+    if ((Get-Item $Target).GetType().Name -ne "DirectoryInfo") {
+	throw "$Target is not a directory"
+    }
+    Write-Verbose "found directory $Target"
 
     # Recursively create symbolic links
     function worker($Item, $Dir){
@@ -49,16 +56,23 @@ function winstow {
 	if (!$FileExists) {
 	    New-Item -ItemType SymbolicLink `
 	      -Path $LinkPath -Target $Item.FullName
-	    Write-Verbose "target does not exists; symbolic link created for '$($item.Name)'"
+	    Write-Verbose "'$($Item.Name)' does not exists at destination. Symbolic link created."
 	    return
-	} else {
-	    Write-Error "$($item.Name) already exists at $linkPath" `
+
+	} elseif ($FileExists -and !$isDir) {
+	    Write-Error "'$($Item.Name)' already exists at $LinkPath" `
 	      -Category WriteError
 	}
 
 	if ($isDir) {
-	    Write-Verbose "$item is a directory"
-	    $Contents = Get-ChildItem -Path $Item
+	    Write-Verbose "'$Item' is a directory and already exists at destination."
+ 
+	    $Contents = Get-ChildItem -Path $Item.FullName
+	    if (!$Contents) {
+		Write-Verbose "'$Item' is empty. Nothing to be done."
+		return
+	    }
+
 	    $Subdir = Join-Path $Dir $Item.Name
 	    $Contents | ForEach-Object {worker $PSITEM $Subdir}
 	    return
