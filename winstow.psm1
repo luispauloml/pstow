@@ -6,7 +6,10 @@ function winstow {
 	$PkgName,
 	[Parameter(Mandatory=$true)]
 	[string]
-	$Destination
+	$Destination,
+	[Parameter()]
+	[switch]
+	$Force
     )
 
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
@@ -53,10 +56,15 @@ function winstow {
 
 	$LinkPath = Join-Path $Dir $Item.Name
 	$FileExists = Test-Path -Path $LinkPath
-	if (!$FileExists) {
+	if (($isDir -and !$FileExists) -or (!$isDir -and (($FileExists -and $Force.IsPresent) -or !$FileExists))) {
+		 if ($Force.IsPresent -and $FileExists) {
+		     Write-Warning "'$($Item.Name)' already exists and will be overwritten with a symbolic link."
+		 } else {
+		     Write-Verbose "'$($Item.Name)' does not exists at destination. Symbolic link will be created." }
+
 	    New-Item -ItemType SymbolicLink `
-	      -Path $LinkPath -Target $Item.FullName
-	    Write-Verbose "'$($Item.Name)' does not exists at destination. Symbolic link created."
+	      -Path $LinkPath -Target $Item.FullName `
+	      -Force
 	    return
 
 	} elseif ($FileExists -and !$isDir) {
