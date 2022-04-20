@@ -81,9 +81,28 @@ function winstow {
 		return
 	    }
 
-	    $Subdir = Join-Path $Dir $Item.Name
-	    $Contents | ForEach-Object {worker $PSITEM $Subdir}
-	    return
+	    $isAlreadyLink = !!("Junction", "SymbolicLink", "HardLink" | `
+	      Where-Object {$_ -eq (Get-Item -Path $LinkPath).LinkType})
+	    if ($isAlreadyLink) {
+		Write-Verbose "'$($Item.Name)' is already a reference to another location."
+
+		if ($Force.isPresent) {
+		    Write-Warning "'$($Item.Name)' will be overwritten by a symbolic link."
+		    New-Item -ItemType SymbolicLink `
+		      -Path $LinkPath -Target $Item.FullName `
+		      -Force | Out-Null
+		    return
+
+		} else {
+		    Write-Error "'$($Item.Name)' already exists at $LinkPath" `
+		      -Category WriteError
+		}
+
+	    } else {
+		$Subdir = Join-Path $Dir $Item.Name
+		$Contents | ForEach-Object {worker $PSITEM $Subdir}
+		return
+	    }
 	}
     }
 
