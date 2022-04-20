@@ -164,3 +164,5 @@ function Set-PStow {
 
     $Contents | ForEach-Object {worker $PSITEM $Destination}
 }
+
+Set-Alias -Name "pstow" -Value "Set-PStow"
