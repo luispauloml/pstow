@@ -1,4 +1,4 @@
-function winstow {
+function Set-PStow {
     [Cmdletbinding(SupportsShouldProcess=$true)]
     Param(
 	[Parameter(Mandatory=$true, ValueFromPipeline=$true)]
