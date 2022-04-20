@@ -3,6 +3,10 @@ This is a utility for creating symbolic links for files inspired by
 [GNU Stow](https://www.gnu.org/software/stow/) that works in Microsoft
 PowerShell, hence, the name.
 
+## License
+This project was written and is licensed by Luis Paulo Morais Lima
+under the MIT License. See [LICENSE](./LICENSE).
+
 ## Requirements
 
 * Microsoft PowerShell version 5.1 or above.
