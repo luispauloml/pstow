@@ -98,9 +98,8 @@ function Set-PStow {
     $Pkg = Get-ChildItem -Filter $PkgName -Directory
     if (!$Pkg) {
 	throw "$PkgName not found"
-    } elseif ($Pkg.Length -ne 1) {
-	Write-Error "more than one item was found for '$PkgName'" `
-	  -Category LimitsExceeded
+    } elseif ($Pkg.GetType().Name -ne "DirectoryInfo") {
+	throw "ambiguous results found for '$PkgName'"
     }
     $Pkg = $Pkg[0]
     Write-Verbose "found directory '$($Pkg.Name)'"
