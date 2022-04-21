@@ -227,6 +227,7 @@ function Set-PStow {
 
 	    } else {
 		$Subdir = Join-Path $Dir $Item.Name
+		Write-Verbose "start recursive call inside '$($Item.Name)'"
 		return $Contents | ForEach-Object {worker $PSITEM $Subdir}
 	    }
 	}
