@@ -59,6 +59,9 @@ If not given and a file or reference to directory already exists at
 destination, an error will be written to the error stream for that
 item but execution will not be terminated.
 
+.PARAMETER Quiet
+Suppress warning messages.
+
 .PARAMETER WhatIf
 Does not execute any change, only shows what would happen.
 
@@ -100,7 +103,10 @@ function Set-PStow {
 	$Destination,
 	[Parameter()]
 	[switch]
-	$Force
+	$Force,
+	[Parameter()]
+	[switch]
+	$Quiet
     )
 
     if ($PSCmdlet.MyInvocation.BoundParameters["Verbose"].IsPresent -eq $true) {
@@ -176,7 +182,9 @@ function Set-PStow {
 	$FileExists = Test-Path -Path $LinkPath
 	if (($isDir -and !$FileExists) -or (!$isDir -and (($FileExists -and $Force.IsPresent) -or !$FileExists))) {
 		 if ($Force.IsPresent -and $FileExists) {
-		     Write-Warning "'$($Item.Name)' already exists and will be overwritten with a symbolic link."
+		    if (!$Quiet.IsPresent) {
+			Write-Warning "'$($Item.Name)' already exists and will be overwritten with a symbolic link."
+		    }
 		 } else {
 		     Write-Verbose "'$($Item.Name)' does not exists at destination. Symbolic link will be created." }
 
@@ -204,7 +212,10 @@ function Set-PStow {
 		Write-Verbose "'$($Item.Name)' is already a reference to another location."
 
 		if ($Force.isPresent) {
-		    Write-Warning "'$($Item.Name)' will be overwritten by a symbolic link."
+		    if (!$Quiet.IsPresent) {
+			Write-Warning "'$($Item.Name)' will be overwritten by a symbolic link."
+		    }
+
 		    return New-Item -ItemType SymbolicLink `
 			     -Path $LinkPath -Target $Item.FullName `
 			     -Force
