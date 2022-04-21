@@ -65,6 +65,12 @@ Does not execute any change, only shows what would happen.
 .PARAMETER Confirm
 Asks for confirmation before creating a symbolic link.
 
+.OUTPUTS
+System.Array
+System.IO.FileInfo
+
+It retuns the output of `New-Item -ItemType SymbolicLink`.
+
 .NOTES
 - Set-PStow does not create hard links, nor junctions, only symbolic
   links.
@@ -174,10 +180,9 @@ function Set-PStow {
 		 } else {
 		     Write-Verbose "'$($Item.Name)' does not exists at destination. Symbolic link will be created." }
 
-	    New-Item -ItemType SymbolicLink `
-	      -Path $LinkPath -Target $Item.FullName `
-	      -Force | Out-Null
-	    return
+	    return New-Item -ItemType SymbolicLink `
+		     -Path $LinkPath -Target $Item.FullName `
+		     -Force
 
 	} elseif ($FileExists -and !$isDir) {
 	    Write-Error "'$($Item.Name)' already exists at $LinkPath" `
@@ -200,10 +205,9 @@ function Set-PStow {
 
 		if ($Force.isPresent) {
 		    Write-Warning "'$($Item.Name)' will be overwritten by a symbolic link."
-		    New-Item -ItemType SymbolicLink `
-		      -Path $LinkPath -Target $Item.FullName `
-		      -Force | Out-Null
-		    return
+		    return New-Item -ItemType SymbolicLink `
+			     -Path $LinkPath -Target $Item.FullName `
+			     -Force
 
 		} else {
 		    Write-Error "'$($Item.Name)' already exists at $LinkPath" `
@@ -212,8 +216,7 @@ function Set-PStow {
 
 	    } else {
 		$Subdir = Join-Path $Dir $Item.Name
-		$Contents | ForEach-Object {worker $PSITEM $Subdir}
-		return
+		return $Contents | ForEach-Object {worker $PSITEM $Subdir}
 	    }
 	}
     }
