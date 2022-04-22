@@ -97,7 +97,7 @@ function Set-PStow {
     Param(
 	[Parameter(Mandatory=$true, ValueFromPipeline=$true)]
 	[string]
-	$PkgName,
+	$Path,
 	[Parameter()]
 	[string]
 	$Destination,
@@ -113,18 +113,19 @@ function Set-PStow {
 	$VerbosePreference = "Continue"
     }
 
-    $Pkg = Get-ChildItem -Filter $PkgName -Directory
-    if (!$Pkg) {
-	throw "$PkgName not found"
-    } elseif ($Pkg.GetType().Name -ne "DirectoryInfo") {
-	throw "ambiguous results found for '$PkgName'"
+    $Pkg = Resolve-Path -Path $Path -ErrorVariable Error | Get-Item
+    if (!!$Error -or !$Pkg) {
+	throw "$Path could not be found."
     }
-    $Pkg = $Pkg[0]
+    if ($Pkg.GetType().Name -ne "DirectoryInfo") {
+	write-debug "1: $($Pkg.GetType())"
+	throw "$($Pkg.Name) is not a directory."
+    }
     Write-Verbose "found directory '$($Pkg.Name)'"
 
-    $Contents = Get-ChildItem -Path $Pkg
+    $Contents = Get-ChildItem -Path $Pkg.FullName
     if (!$Contents) {
-	Write-Verbose "'$PkgName' is empty. Nothing to be done."
+	Write-Verbose "'$($Pkg.Name)' is empty. Nothing to be done."
 	return
     }
 
@@ -145,15 +146,15 @@ function Set-PStow {
 	}
 
 	$Config = $Config.PSObject.Properties | `
-	  Where-Object {$_.Name -eq $PkgName}
+	  Where-Object {$_.Name -eq $Pkg.Name}
 	if (!$Config) {
-	    throw "no configuration for '$PkgName' found in 'config.pstow'"
+	    throw "no configuration for '$($Pkg.Name)' found in 'config.pstow'"
 	} elseif ($Config.Length -gt 1) {
-	    throw "ambiguous results found for '$PkgName' found in 'config.pstow'"
+	    throw "ambiguous results found for '$($Pkg.Name)' found in 'config.pstow'"
 	}
 
 	$Destination = $Config[0].Value
-	Write-Verbose "set $Destination as destination for '$PkgName'"
+	Write-Verbose "set $Destination as destination for '$($Pkg.Name)'"
     }
 
     # Check $Destination; an error will be thrown if it does not exists

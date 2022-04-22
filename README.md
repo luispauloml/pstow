@@ -35,7 +35,7 @@ help.
 ## Example
 If you already use `stow` in Linux, that means you already have
 directories organized the right way.  The next step is to just go the
-directory where the packege is located and use `Set-PStow` or the
+directory where the package is located and use `Set-PStow` or the
 alias `pstow`.  However, unless otherwise told to do differently,
 `stow` creates links in the parent directory of the current working
 directory, while for PStow the destination where the links will be
@@ -62,9 +62,8 @@ C:.
                 my-theme.el
 ```
 
-All needed now is to run `Set-PStow` or `pstow` on `emacs` -- which
-should be a subdirectory in current working directory.  To see what is
-happening, pass `-Verbose`:
+All needed now is to run `Set-PStow` or `pstow` on `emacs`.
+To see what is happening, pass `-Verbose`:
 
 ```
 PS > pstow emacs $env:appdata -verbose
