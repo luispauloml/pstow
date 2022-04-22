@@ -38,8 +38,11 @@ directories organized the right way.  The next step is to just go the
 directory where the package is located and use `Set-PStow` or the
 alias `pstow`.  However, unless otherwise told to do differently,
 `stow` creates links in the parent directory of the current working
-directory, while for PStow the destination where the links will be
-created always needs to be passed as a parameter.
+directory, while for PStow there is no default behaviour, and you need
+to pass either the destination or a configuration file as a parameter.
+If you want to use a configuration file, you can either set a JSON
+file named `config.pstow` in current working directory or pass the
+path to such a file.
 
 As an example, suppose one wants to use PStow to setup symbolic links
 for their configuration of GNU Emacs in Windows.  The first step is to
