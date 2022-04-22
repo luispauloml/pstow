@@ -123,6 +123,12 @@ function Set-PStow {
     }
     Write-Verbose "found directory '$($Pkg.Name)'"
 
+    if (!$Quiet.IsPresent) {
+	if (!!$Pkg.LinkType) {
+	    Write-Warning "$($Pkg.Name) is a reference to another location."
+	}
+    }
+
     $Contents = Get-ChildItem -Path $Pkg.FullName
     if (!$Contents) {
 	Write-Verbose "'$($Pkg.Name)' is empty. Nothing to be done."
@@ -162,11 +168,17 @@ function Set-PStow {
 	throw "destination not found"
     }
 
-    # Now check whether it is a directory
-    if ((Get-Item $Destination).GetType().Name -ne "DirectoryInfo") {
+    $DestinationItem = Get-Item $Destination
+    if ($DestinationItem.GetType().Name -ne "DirectoryInfo") {
 	throw "$Destination is not a directory"
     }
     Write-Verbose "found directory $Destination"
+
+    if (!$Quiet.IsPresent) {
+	if (!!$DestinationItem.LinkType) {
+	    Write-Warning "$Destination is a reference to a different location."
+	}
+    }
 
     # Recursively create symbolic links
     function worker($Item, $Dir){
