@@ -157,8 +157,10 @@ function Set-PStow {
 	Write-Verbose "set $Destination as destination for '$($Pkg.Name)'"
     }
 
-    # Check $Destination; an error will be thrown if it does not exists
-    $Destination = Resolve-Path -Path $Destination
+    $Destination = Resolve-Path -Path $Destination -ErrorVariable Error
+    if (!!$Error) {
+	throw "destination not found"
+    }
 
     # Now check whether it is a directory
     if ((Get-Item $Destination).GetType().Name -ne "DirectoryInfo") {
