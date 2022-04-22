@@ -41,11 +41,19 @@ contents will serve as a target for the links to be created.
 .PARAMETER Destination
 A path to the directory in which the links will be created.
 
-If not given, Set-PStow will look for a `config.pstow` file in current
-working directory.  This file is a JSON in which keys are the name of
-packages and their values are the path that will be taken as the
+If not given, Set-PStow will turn to `ConfigFile` parameter to find
+the destination.
+
+.PARAMETER ConfigFile
+A path to a configuration file.
+
+This file should a JSON file in which keys are the name of packages
+and their values are the path that will be taken as the
 destination. Beware that consuming the JSON by PowerShell will be
 case-insensible and an error will be thrown for duplicated keys.
+
+If not given, Set-PStow will look for a `config.pstow` file in current
+working directory.
 
 .PARAMETER Force
 If given, existing files -- not directories -- will be overwritten by
@@ -102,6 +110,9 @@ function Set-PStow {
 	[string]
 	$Destination,
 	[Parameter()]
+	[string]
+	$ConfigFile,
+	[Parameter()]
 	[switch]
 	$Force,
 	[Parameter()]
@@ -138,27 +149,32 @@ function Set-PStow {
     }
 
     if ($PSCmdlet.MyInvocation.BoundParameters['Destination'] -eq $null) {
-	Write-Verbose "Destination not passed. Looking for 'config.pstow'."
-
-	$Config = Get-ChildItem -Filter "config.pstow"
-	if (!$Config) {
-	    throw "'config.pstow' not found"
-	} elseif ($Config.GetType().Name -ne "FileInfo") {
-	    throw "ambiguous results found for 'config.pstow"
+	if ($PSCmdlet.MyInvocation.BoundParameters['ConfigFile']) {
+	    Write-Verbose "ConfigFile passed."
+	} else {
+	    Write-Verbose "Destination not passed. Looking for 'config.pstow'."
+	    $ConfigFile = "config.pstow"
 	}
-	Write-Verbose "'config.pstow' found."
+
+	$Config = Resolve-Path $ConfigFile | Get-Item
+	if (!$Config) {
+	    throw "$ConfigFile not found"
+	} elseif ($Config.GetType().Name -ne "FileInfo") {
+	    throw "'$($Config.Name)' is not a file."
+	}
+	Write-Verbose "'$($Config.Name)' found."
 
 	$Config = Get-Content $Config | ConvertFrom-Json -ErrorVariable Error
 	if (!!$Error) {
-	    throw "'config.pstow' could not be parsed properly"
+	    throw "'$($Config.Name)' could not be parsed properly"
 	}
 
 	$Config = $Config.PSObject.Properties | `
 	  Where-Object {$_.Name -eq $Pkg.Name}
 	if (!$Config) {
-	    throw "no configuration for '$($Pkg.Name)' found in 'config.pstow'"
+	    throw "no configuration for '$($Pkg.Name)' found in '$($Config.Name)'"
 	} elseif ($Config.Length -gt 1) {
-	    throw "ambiguous results found for '$($Pkg.Name)' found in 'config.pstow'"
+	    throw "ambiguous results found for '$($Pkg.Name)' found in '$($Config.Name)'"
 	}
 
 	$Destination = $Config[0].Value
