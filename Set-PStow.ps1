@@ -113,6 +113,10 @@ function Set-PStow {
 	$VerbosePreference = "Continue"
     }
 
+    if ($PSCmdlet.MyInvocation.BoundParameters["Quiet"].IsPresent -eq $true) {
+	$WarningPreference = "SilentlyContinue"
+    }
+
     $Pkg = Resolve-Path -Path $Path -ErrorVariable Error | Get-Item
     if (!!$Error -or !$Pkg) {
 	throw "$Path could not be found."
@@ -123,10 +127,8 @@ function Set-PStow {
     }
     Write-Verbose "found directory '$($Pkg.Name)'"
 
-    if (!$Quiet.IsPresent) {
-	if (!!$Pkg.LinkType) {
-	    Write-Warning "$($Pkg.Name) is a reference to another location."
-	}
+    if (!!$Pkg.LinkType) {
+	Write-Warning "$($Pkg.Name) is a reference to another location."
     }
 
     $Contents = Get-ChildItem -Path $Pkg.FullName
@@ -174,10 +176,8 @@ function Set-PStow {
     }
     Write-Verbose "found directory $Destination"
 
-    if (!$Quiet.IsPresent) {
-	if (!!$DestinationItem.LinkType) {
-	    Write-Warning "$Destination is a reference to a different location."
-	}
+    if (!!$DestinationItem.LinkType) {
+	Write-Warning "$Destination is a reference to a different location."
     }
 
     # Recursively create symbolic links
@@ -197,9 +197,7 @@ function Set-PStow {
 	$FileExists = Test-Path -Path $LinkPath
 	if (($isDir -and !$FileExists) -or (!$isDir -and (($FileExists -and $Force.IsPresent) -or !$FileExists))) {
 		 if ($Force.IsPresent -and $FileExists) {
-		    if (!$Quiet.IsPresent) {
-			Write-Warning "'$($Item.Name)' already exists and will be overwritten with a symbolic link."
-		    }
+		     Write-Warning "'$($Item.Name)' already exists and will be overwritten with a symbolic link."
 		 } else {
 		     Write-Verbose "'$($Item.Name)' does not exists at destination. Symbolic link will be created." }
 
@@ -227,9 +225,7 @@ function Set-PStow {
 		Write-Verbose "'$($Item.Name)' is already a reference to another location."
 
 		if ($Force.isPresent) {
-		    if (!$Quiet.IsPresent) {
-			Write-Warning "'$($Item.Name)' will be overwritten by a symbolic link."
-		    }
+		    Write-Warning "'$($Item.Name)' will be overwritten by a symbolic link."
 
 		    return New-Item -ItemType SymbolicLink `
 			     -Path $LinkPath -Target $Item.FullName `
